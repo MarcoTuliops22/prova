@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
         agendarConsulta(event);
     });
 }
-
 });
 
 function agendarConsulta(event) {
@@ -19,16 +18,37 @@ function agendarConsulta(event) {
   const nome = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
 
-}
-
   if (!nome || !email ) {
     alert("Preencha todos os campos!");
     return;
   }
 
-  function atualizarLista() {
-  let lista = document.getElementById("listaAgendamento");
+  const conflito = agendamentos.some(
+    (item) =>
+      item.data === data && item.hora === hora && item.status === "agendado",
+  );
+
+  if (conflito) {
+    alert("Já existe um agendamento para essa data e horário!");
+    return;
   }
+
+  const agendamento = {
+    id: Date.now(),
+    nome,
+    email,
+    status: "agendado",
+  };
+
+  agendamentos.push(agendamento);
+  salvarLocalStorage();
+  atualizarLista();
+  event.target.reset();
+}
+
+function atualizarLista() {
+  let lista = document.getElementById("listaAgendamento");
+
   if (lista) {
       lista.innerHTML =  "";
   }
@@ -39,7 +59,6 @@ function agendarConsulta(event) {
       <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:5px; background:#f9f9f9;">
         <strong>Nome:</strong> ${item.nome}<br>
         <strong>Email:</strong> ${item.email}<br>
-        
 
         <div style="display:flex; justify-content:space-between; margin-top:5px;">
           <span><strong>Hora:</strong> ${item.hora}</span>
@@ -74,14 +93,15 @@ function agendarConsulta(event) {
           </button>
         </div>
       </div>
-    `
-        
-  if (lista) {
+    `;
+
+    if (lista) {
         lista.appendChild(div);
     }
   });
+}
 
-  function concluirAgendamento(id) {
+function concluirAgendamento(id) {
   const agendamento = agendamentos.find((item) => item.id === id);
   if (agendamento) {
     agendamento.status = "concluido";
@@ -100,10 +120,10 @@ function cancelarAgendamento(id) {
 }
 
 function salvarLocalStorage() {
-  localStorage.setItem("temaPreferido", JSON.stringify(agendamentos));
+  localStorage.setItem("agendamentos", JSON.stringify(agendamentos));
 }
 
 function carregarLocalStorage() {
   const dados = localStorage.getItem("agendamentos");
   agendamentos = dados ? JSON.parse(dados) : [];
-};
+}
